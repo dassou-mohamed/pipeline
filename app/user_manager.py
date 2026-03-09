@@ -1,5 +1,5 @@
 class UserManager:
-    def __init__(self):  # Correction ici : self au lieu de selfself
+    def __init__(self):
         self.users = []
 
     def add_user(self, username):
@@ -17,6 +17,6 @@ class UserManager:
     def count_users(self):
         return len(self.users)
 
+
 def count_total_users(users):
-    # Suppression de la variable 'temp' qui ne servait à rien
     return len(users)
