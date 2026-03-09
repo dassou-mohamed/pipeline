@@ -1,4 +1,4 @@
-name: CI Pipeline Simple
+name: CI Pipeline Multi-Jobs
 
 on:
   push:
@@ -8,31 +8,50 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  # Job 1 : Analyse statique (Lint)
+  lint:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Recupérer le code
-        uses: actions/checkout@v3
-
-      - name: Installer Python 3.11
-        uses: actions/setup-python@v4
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: '3.11'
+      - name: Installer flake8
+        run: pip install flake8
+      - name: Executer lint
+        run: |
+          flake8 app/ tests/ --count --max-line-length=127 --statistics
 
+  # Job 2 : Exécution des tests
+  test:
+    runs-on: ubuntu-latest
+    needs: lint  # Ce job ne démarre que si 'lint' réussit
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
       - name: Installer les dépendances
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Lint avec flake8
-        run: |
-          flake8 app --count --select=E9,F63,F7,F82,F841 --show-source --statistics
-          flake8 app --count --max-complexity=10 --max-line-length=127 --statistics
-          flake8 tests --count --max-line-length=127 --statistics
-
-      - name: Lancer les tests avec pytest et coverage
-        run: |
-          # On installe le projet en mode éditable pour que 'app' soit reconnu
           pip install -e .
-          pytest
+      - name: Executer pytest avec couverture
+        run: pytest
+
+  # Job 3 : Build du package
+  build:
+    runs-on: ubuntu-latest
+    needs: test  # Ce job ne démarre que si 'test' réussit
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Installer l'outil de build
+        run: pip install build
+      - name: Générer le package Python (sdist et wheel)
+        run: python -m build
+      - name: Stocker le résultat (Artefact)
+        uses: actions/upload-artifact@v3
+        with:
+          name: python-package-dist
+          path: dist/
