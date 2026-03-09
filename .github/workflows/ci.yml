@@ -33,4 +33,6 @@ jobs:
 
       - name: Lancer les tests avec pytest et coverage
         run: |
-          pytest -v --cov=app
+          # On installe le projet en mode éditable pour que 'app' soit reconnu
+          pip install -e .
+          pytest
