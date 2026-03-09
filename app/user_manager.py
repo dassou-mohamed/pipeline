@@ -1,5 +1,5 @@
 class UserManager:
-    def __init__(selfself):
+    def __init__(self):  # Correction ici : self au lieu de selfself
         self.users = []
 
     def add_user(self, username):
@@ -18,5 +18,5 @@ class UserManager:
         return len(self.users)
 
 def count_total_users(users):
-    temp = 0  # Cette variable causera probablement une alerte de linting
+    # Suppression de la variable 'temp' qui ne servait à rien
     return len(users)
